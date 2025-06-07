@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  yelpcamp:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules # 로컬 node_modules 덮어쓰기 방지
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/yelp-camp
+    depends_on:
+      - mongo
+    command: ["npx", "nodemon", "app.js"]
+
+  mongo:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  seed:
+    profiles: ["seed"]
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/yelp-camp
+    depends_on:
+      - mongo
+    command: ["node", "seeds/index.js"]
+
+volumes:
+  mongo-data:
