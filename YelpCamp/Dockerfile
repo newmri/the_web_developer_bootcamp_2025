@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # 앱 실행
-CMD ["npx", "nodemon", "app.js"]
+CMD ["npx", "nodemon"]

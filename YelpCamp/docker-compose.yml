@@ -12,7 +12,7 @@ services:
       - MONGO_URL=mongodb://mongo:27017/yelp-camp
     depends_on:
       - mongo
-    command: ["npx", "nodemon", "app.js"]
+    command: ["npx", "nodemon"]
 
   mongo:
     image: mongo:8
