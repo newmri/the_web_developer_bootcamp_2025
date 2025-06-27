@@ -21,5 +21,16 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  seed:
+    profiles: ["seed"]
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/yelp-camp
+    depends_on:
+      - mongo
+    command: ["node", "seeds/index.js"]
 volumes:
   mongo-data:
