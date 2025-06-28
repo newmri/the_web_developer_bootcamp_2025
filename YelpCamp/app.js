@@ -13,6 +13,8 @@ const methodOverride = require("method-override");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 
 const userRoutes = require("./routes/users");
 const campgroundRoutes = require("./routes/campgrounds");
@@ -39,11 +41,13 @@ app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
 const sessionConfig = {
+  name: "session",
   secret: "asdpwqel1l233",
   resave: false,
   saveUninitialized: true,
   cookie: {
     httpOnly: true,
+    // secure: true,
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7일
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
   },
@@ -51,6 +55,53 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 app.use(flash());
+app.use(helmet());
+
+const scriptSrcUrls = [
+  "https://cdn.jsdelivr.net/",
+  "https://api.mapbox.com/",
+  "https://api.tiles.mapbox.com/",
+  "https://kit.fontawesome.com/",
+  "https://cdnjs.cloudflare.com/",
+];
+
+const styleSrcUrls = [
+  "https://cdn.jsdelivr.net/",
+  "https://kit.fontawesome.com/",
+  "https://use.fontawesome.com/",
+  "https://fonts.googleapis.com/",
+  "https://api.mapbox.com/",
+  "https://api.tiles.mapbox.com/",
+];
+
+const connectSrcUrls = [
+  "https://api.mapbox.com/",
+  "https://a.tiles.mapbox.com/",
+  "https://b.tiles.mapbox.com/",
+  "https://events.mapbox.com/",
+];
+
+const fontSrcUrls = [];
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: [],
+      connectSrc: ["'self'", ...connectSrcUrls],
+      scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+      workerSrc: ["'self'", "blob:"],
+      objectSrc: [],
+      imgSrc: [
+        "'self'",
+        "blob:",
+        "data:",
+        `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`,
+        "https://images.unsplash.com/",
+      ],
+      fontSrc: ["'self'", ...fontSrcUrls],
+    },
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -83,6 +134,8 @@ app.use((err, req, res, next) => {
   if (!err.message) err.message = "Something went wrong!";
   res.status(statusCode).render("error", { err });
 });
+
+app.use(mongoSanitize());
 
 app.listen(3000, () => {
   console.log("Serving on port 3000");
