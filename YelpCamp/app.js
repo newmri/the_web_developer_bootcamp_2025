@@ -20,7 +20,8 @@ const userRoutes = require("./routes/users");
 const campgroundRoutes = require("./routes/campgrounds");
 const reviewRoutes = require("./routes/reviews");
 
-const mongoUrl = process.env.MONGO_URL || "mongodb://localhost:27017/yelp-camp";
+const MongoStore = require("connect-mongo");
+const mongoUrl = process.env.MONGO_URL;
 
 mongoose.connect(mongoUrl);
 
@@ -40,7 +41,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
+const store = MongoStore.create({
+  mongoUrl,
+  secret: "asdpwqel1l233",
+  touchAfter: 24 * 60 * 60,
+});
+
+store.on("error", function (e) {
+  console.log("SESSION STROE ERROR", e);
+});
+
 const sessionConfig = {
+  store,
   name: "session",
   secret: "asdpwqel1l233",
   resave: false,

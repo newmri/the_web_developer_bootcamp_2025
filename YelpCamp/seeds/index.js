@@ -5,7 +5,7 @@ const Campground = require("../models/campground");
 const Review = require("../models/review");
 const User = require("../models/user");
 
-const mongoUrl = process.env.MONGO_URL || "mongodb://localhost:27017/yelp-camp";
+const mongoUrl = process.env.MONGO_URL;
 
 mongoose.connect(mongoUrl);
 
